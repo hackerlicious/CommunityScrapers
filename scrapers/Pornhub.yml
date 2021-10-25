@@ -117,7 +117,7 @@ xPathScrapers:
     scene:
       Title: //h1[@class="title"]/span/text()
       Details: //meta[@property="og:description"][1]/@content
-      URL: //meta[@name='og:url']/@content
+      URL: //link[@rel="canonical"]/@href
       Date:
         selector: //script[contains(., 'uploadDate')]/text()
         postProcess:
@@ -133,8 +133,18 @@ xPathScrapers:
         selector: //meta[@property="og:image"][1]/@content
       Performers:
         Name: $performer/@data-mxptext
-        URL: $performer/@href
+        URL:
+          selector: $performer/@href
+          postProcess:
+            - replace:
+                - regex: ^
+                  with: "https://www.pornhub.com"
       Studio:
         Name: $studio
-        URL: $studio/@href
+        URL:
+          selector: $studio/@href
+          postProcess:
+            - replace:
+              - regex: ^
+                with: "https://www.pornhub.com"
 # Last Updated October 22, 2021
