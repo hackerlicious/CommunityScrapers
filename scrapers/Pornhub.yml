@@ -15,9 +15,9 @@ sceneByURL:
     scraper: sceneScraper
 sceneByFragment:
   action: scrapeXPath
-  queryURL: https://www.pornhub.com/view_video.php?viewkey={filename}
+  queryURL: https://www.pornhub.com/view_video.php?viewkey={title}
   queryURLReplace:
-    filename:
+    title:
       - regex: (?:.*[^a-zA-Z\d])+(ph(?:[a-zA-Z\d]+)).+
         with: $1
       - regex: .*\.[^\.]+$ # if no ph id is found in the filename
