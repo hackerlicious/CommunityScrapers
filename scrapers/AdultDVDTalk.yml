@@ -1,0 +1,104 @@
+name: AdultDVDTalk
+sceneByURL:
+  - action: scrapeXPath
+    url:
+      - adultdvdtalk.com
+    scraper: sceneScraper
+movieByURL:
+  - action: scrapeXPath
+    url:
+      - adultdvdtalk.com
+    scraper: movieScraper
+
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://www.adultdvdtalk.com/search/{}
+  scraper: sceneSearch
+sceneByQueryFragment:
+  action: scrapeXPath
+  queryURL: "{url}"
+  scraper: sceneScraper
+
+xPathScrapers:
+  sceneSearch:
+    scene:
+      Title:
+        selector: //a[@class="dark"]/text()
+        postProcess:
+          - replace:
+              - regex: \ \(([^)]+)\)+$ # Remove the studio which is in the trailing " (studio name)"
+                with: ""
+      URL: //a[@class="dark"]/@href
+      # These images are not loading for some reason (403 response), I suspect it's an issue with the referrer in the resulting img tag
+      # I'll leave this here in case it gets fixed in an upcoming release
+      Image: //img[@class="adt-boxcover-browse"]/@src
+
+  movieScraper:
+    movie:
+      Name:
+        selector: //p[@class="lead"]/span[1]/text()
+        postProcess:
+          - replace:
+              - regex: \ \(([^)]+)\)+$ # Remove the studio which is in the trailing " (studio name)"
+                with: ""
+      Director: //a[contains(@title, "directed")]/text()
+      Date:
+        selector: //span[@itemprop="releaseDate"]/text()
+        postProcess:
+          - parseDate: 1/2/2006
+      Studio:
+        Name: //a[@class="cast-list-links"][1]/text()
+        URL:
+          selector: //a[@class="cast-list-links"][1]/@href
+          postProcess:
+            - replace:
+                - regex: ^
+                  with: "https://www.adultdvdtalk.com"
+      FrontImage:
+        selector: //img[@class="adt-boxcover-browse"]/@src
+        postProcess:
+          - replace:
+              - regex: -\d[^2].jpg$
+                with: -02.jpg
+      URL: //meta[@name='og:url']/@content
+
+  sceneScraper:
+    scene:
+      Title:
+        selector: //p[@class="lead"]/span[1]/text()
+        postProcess:
+          - replace:
+              - regex: \ \(([^)]+)\)+$ # Remove the studio which is in the trailing " (studio name)"
+                with: ""
+      Date:
+        selector: //span[@itemprop="releaseDate"]/text()
+        postProcess:
+          - parseDate: 1/2/2006
+      Image:
+        selector: //img[@class="adt-boxcover-browse"]/@src
+        postProcess:
+          - replace:
+              - regex: -\d[^2].jpg$
+                with: -02.jpg
+      Studio:
+        Name: //a[@class="cast-list-links"][1]/text()
+        URL:
+          selector: //a[@class="cast-list-links"][1]/@href
+          postProcess:
+            - replace:
+                - regex: ^
+                  with: "https://www.adultdvdtalk.com"
+      Movies:
+        Name: //h1/text()
+        URL: //link[@rel="canonical"]/@href
+      Tags:
+        Name: //a[contains(@title, "more ")]/text()
+      Performers:
+        Name:
+          selector: //a[contains(@title, "Movies starring")]/text()
+          postProcess:
+            - replace: # Remove "&nbsp;" from the performer name
+                - regex: "\xa0"
+                  with: " "
+      URL: //meta[@name='og:url']/@content
+# Last Updated November 11, 2021
