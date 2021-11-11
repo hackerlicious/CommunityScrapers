@@ -18,7 +18,32 @@ performerByName:
   action: scrapeXPath
   queryURL: https://www.hotmovies.com/star_search.php?words={}&searchtype_value=star
   scraper: performerSearch
+
+sceneByName:
+  action: scrapeXPath
+  queryURL: https://www.hotmovies.com/search.php?words={}}&hdnNavigationType=3&searchtype_value=
+  scraper: sceneSearch
+sceneByQueryFragment:
+  action: scrapeXPath
+  queryURL: "{url}"
+  scraper: sceneScraper
+
 xPathScrapers:
+  sceneSearch:
+    scene:
+      Title: //h3[contains(@class, "show-for-medium")]/a/@title
+      URL: //h3[contains(@class, "show-for-medium")]/a/@href
+      Date:
+        selector: //span[@class="release_year"]/a/text()
+        postProcess:
+          - parseDate: "2006"
+      Image:
+        selector: //img[@class="boxcover"]/@style
+        postProcess:
+          - replace:
+              - regex: .*?(https?:\/\/\S*\.jpg).*
+                with: $1
+
   sceneScraper:
     scene:
       Title: &title
@@ -31,17 +56,26 @@ xPathScrapers:
         Name: //div[@class="stars section"]//a
       URL: &url
         selector: //meta[@property="og:url"]/@content
+      Date:
+        selector: //strong[contains(text(), "Released:")]/following-sibling::text()[1]
+        postProcess:
+          - parseDate: "2006"
       Movies:
         Name: *title
         URL: *url
       Studio:
         Name: //div[@class="small-4 medium-3 cell video_details"]/a[1]
       Image:
-        selector: //div[@class="video_preview_wrapper show-for-medium"]/@style
-        postProcess:
-          - replace:
-              - regex: .*?(https?:\/\/\S*\.jpg).*
-                with: $1
+        # Updated to use the Front Image, which makes sense for a scene which is a full movie.
+        # Uncomment the Scene image selector to use the screenshot image instead
+        selector: //div[@class="lg_inside_wrap"]/@data-front
+        # Scene image selector
+        #selector: //div[@class="video_preview_wrapper show-for-medium"]/@style
+        #postProcess:
+        #  - replace:
+        #      - regex: .*?(https?:\/\/\S*\.jpg).*
+        #        with: $1
+
   movieScraper:
     movie:
       Name: *title
@@ -52,7 +86,7 @@ xPathScrapers:
       Studio:
         Name: //a[contains(@href, "/studio/")]/text()
       Synopsis: *desc
-      FrontImage: //div[@class="lg_inside_wrap"]/@data-front | //img[@id="cover"]/@src
+      FrontImage: //div[@class="lg_inside_wrap"]/@data-front
       BackImage: //div[@class="lg_inside_wrap"]/@data-back
   performerSearch:
     performer:
@@ -118,4 +152,4 @@ xPathScrapers:
               - regex: \|
                 with: " "
       Aliases: //strong[text()="Aliases:"]/following-sibling::text()[1]
-# Last Updated April 29, 2021
+# Last Updated Nov 11, 2021
